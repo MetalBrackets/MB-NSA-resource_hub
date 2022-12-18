@@ -4,12 +4,16 @@
 
 ## Spécifications
 
-Mise en pratique avec la configuration de 4 VMs dans virtualbox
+Mise en place de 4 VMs avec virtualbox
 
-- VM.0 - server Gatteway - OpenBSD -> 1 brigde et 3 réseaus privés
-- VM.1 - client Administration -> réseau interne
-- VM.2 - server web FreeBSD -> réseau interne
-- VM.3 - client Employee -> réseau interne
+- VM.0 - server Gatteway - OpenBSD  
+  -> 1 brigde et 3 réseaus privés
+- VM.1 - client Administration  
+  -> réseau interne
+- VM.2 - server web FreeBSD  
+  -> réseau interne
+- VM.3 - client Employee  
+  -> réseau interne
 
 ![Plan d'adressage](/plan-adressage.png "nsa map")
 
@@ -35,7 +39,7 @@ Retirer le .iso pour éviter que ça boot sur l'image lors d'un reboot :
 
 ---
 
-### 0) Se connecter en ssh car c'est un gros fichier à copier
+### 0) Se connecter en ssh dans un premier temps
 
 > [ si vous avez un msg d'erreur du type "performing sanity check on sshd configuration no host key files found", la solution est de regénerer une clé ssh - `ssh-keygen -A` `service sshd restart` `service sshd status`]
 
@@ -64,7 +68,7 @@ Retirer le .iso pour éviter que ça boot sur l'image lors d'un reboot :
 `sudo service nginx start`  
 `sudo service nginx status`
 
-🗨️ en output on a "nginx is running as pid XXXX"
+🗨️ output: "nginx is running as pid XXXX"
 
 Aller à l'adresse ip sur un navigateur pour voir la page "Welcome to Ngninx !"  
 `ifconfig`
@@ -73,7 +77,7 @@ Aller à l'adresse ip sur un navigateur pour voir la page "Welcome to Ngninx !"
 
 ---
 
-### 3) Install Mysql8.0 :
+### 3) Install MySQL 8.0 :
 
 `sudo pkg install -y mysql80-client mysql80-server mysqli`
 
@@ -82,15 +86,15 @@ Aller à l'adresse ip sur un navigateur pour voir la page "Welcome to Ngninx !"
 `sudo sysrc mysql_enable=yes`  
 `sudo service mysql-server start`  
 `sudo service mysql-server status`  
-🗨️ en output on a "mysql running as pid XXX
+🗨️ output: "mysql running as pid XXX"
 
-👍 Ajouter une sécure install
+👍 Ajouter la sécure install !  
 `sudo mysql_secure_installation`  
 Définir un mot de passe et appuyez sur ENTER pour sélectionner les valeurs par défaut.
 
 ---
 
-### 👍 3-bis) Install Mysql8.0 avec Port System
+### 💀 3-bis) Install MySQL 8.0 avec Port System
 
 Une demi journée...  
 mourir puis revivre.
@@ -107,7 +111,7 @@ mourir puis revivre.
 `sudo sysrc php_fpm_enable=yes`  
 `sudo service php-fpm start`  
 `sudo service php-fpm status`  
-🗨️ en output on a "php_fpm is running as pid XXXX
+🗨️ output: "php_fpm is running as pid XXXX"
 
 ---
 
@@ -121,7 +125,7 @@ mourir puis revivre.
 
 `sudo openssl dhparam -out /usr/local/etc/nginx/dhparam.pem 4096`  
 On attend 5 minutes...  
-Jolie la neige !
+Laisse tomber la neige.
 
 **A) Configuration pointant vers la key et le cert SSL**
 
@@ -177,19 +181,21 @@ server {
 **B) Éditer nginx.conf**  
 `sudo nano /usr/local/etc/nginx/nginx.conf`
 
-Ajoutez la ligne suivante au http {}bloc :
+Ajoutez la ligne suivante au `http {}` bloc :
 
+```
 inclure test.conf;
+```
 
 Start nginx  
 `sudo service nginx restart`  
 Test de la configuration  
 `sudo nginx -t`
 
-🗨️ en output "nginx: the configuration file /usr/local/etc/nginx/nginx.conf syntax is ok
+🗨️ output: "nginx: the configuration file /usr/local/etc/nginx/nginx.conf syntax is ok
 nginx: configuration file /usr/local/etc/nginx/nginx.conf test is successful"
 
-Enfin recharger le service
+Enfin recharger le service  
 `sudo service nginx reload`
 
 ---
@@ -228,9 +234,9 @@ $conn->close();
 ?>
 ```
 
-**Aller voir le fichier à l'adresse ip**  
+Ok, maintenant on peut aller voir le site à l'adresse ip.  
 http://votre-ip/data.php  
-**Vous avez cette erreur php car la db n'est pas encore installé** :
+Mais ! Vous avez cette erreur php - ci-dessous - car la db n'est pas encore installé.
 
 > Warning: mysqli:: **construct(): The server requested authentication method unknown to the client [caching_sha2_password] in /usr/local/www/nginx-dist/data.php on line 8
 > Warning: mysqli:: **construct(): (HY000/2054): The server requested authentication method unknown to the client in /usr/local/www/nginx-dist/data.php on line 8
@@ -242,19 +248,20 @@ http://votre-ip/data.php
 
 **A) Création d'un user "backend"**
 
-Se connecter avec
+Se connecter avec  
 `sudo mysql -u root -p`  
 avec le mdp `Bit8Q6a6G`  
 (parce que c'est ce que j'ai mis lors de la configuration de mysql_secure_installation)  
-Sinon se connecter avec `sudo mysql -u root`
+Sinon se connecter avec  
+`sudo mysql -u root`
 
-- Dans la db mysql  
+- Dans la db _mysql_  
   `use mysql`  
   [mysql]- `CREATE USER 'backend'@'localhost' IDENTIFIED WITH mysql_native_password BY 'Bit8Q6a6G';`
 
 - Ensuite  
-  Retourner dans mysql, puis,  
-  `GRANT ALL PRIVILEGES ON nsa501.\* TO 'backend'@'localhost';`
+  `exit` ?  
+  `GRANT ALL PRIVILEGES ON nsa501.\* TO 'backend'@'localhost';`  
   `FLUSH PRIVILEGES;`
 
 **B) Création d'une db nsa501**
@@ -263,15 +270,16 @@ Se connecter avec backend
 `sudo mysql -u backend -p`  
 password: `Bit8Q6a6G`
 
-- Créer une db
+- Créer une db  
   `CREATE DATABASE nsa501;`  
   `SHOW DATABASES;`
 
-> pour info, la localisation des db -> /var/db/mysql/nsa501
+> pour info, la localisation des db  
+> -> /var/db/mysql/nsa501
 
 **C) Insertion du .sql dans la db**
 
-Avec FileZilla ou nano, placer ou éditer le fichier nsa501.sql dans un dossier /app à la racine.
+Avec FileZilla ou nano, placer ou éditer le fichier _nsa501.sql_ dans un dossier _/app_ à la racine.
 
 ```
 SET FOREIGN_KEY_CHECKS=0;
@@ -305,7 +313,7 @@ Se mettre dans la base de données
 [nsa501]- `SHOW TABLES;`  
 [nsa501]- `SELECT \* FROM user`
 
-Marvin42 a bien été inséré.
+👾 Bravo, _Marvin42_ a bien été inséré.
 
 ---
 
@@ -387,20 +395,23 @@ subnet 192.168.42.128 netmask 255.255.255.192 {
 ```
 
 **B) Configuration des interfaces du réseau**  
-Spécifier le mot "NONE" permet de configurer l'adresse de brodcast en fonction du masque de réseau. L' option netmask doit être présente pour pouvoir utiliser cette option.
+Spécifier le mot "NONE" permet de configurer l'adresse de brodcast en fonction du masque de réseau. L'option netmask doit être présente pour pouvoir utiliser cette option.
 
+Interface administration  
 `nano /etc/hostname.em1`
 
 ```
 inet 192.168.42.1 255.255.255.192 NONE
 ```
 
+Interface serverfreebsd  
 `nano /etc/hostname.em2`
 
 ```
 inet 192.168.42.65 255.255.255.192 NONE
 ```
 
+Interface employee  
 `nano /etc/hostname.em3`
 
 ```
@@ -409,15 +420,15 @@ inet 192.168.42.129 255.255.255.192 NONE
 
 > Pour infos :  
 > dans hosts /etc/hosts il y a le localhost.  
-> dans /var/db/dhcpd.leases il y a les contrats.
+> dans /var/db/dhcpd.leases il y a les contrats qui mettent automatiquement à jour les dernières valeurs courantes.
 
 **C) SYSCTL**  
 Configuration pour pouvoir transférer des paquets IP entre les interfaces.  
-Éditer dans sysctl.conf avec cette commande rendra le changement permanent.  
+Éditer dans _sysctl.conf_ avec cette commande rendra le changement permanent.  
 `echo "net.inet.ip.forwarding=1" >> /etc/sysctl.conf`
 
 **D) Activer et démarrer DHCPD**  
-La dernière étape, activer le démarrage automatique du service **dhcpd** qui mettra à jour la passerelle ([)et le fichier /etc/resolv.conf).  
+La dernière étape, activer le démarrage automatique du service **dhcpd** qui mettra à jour la passerelle (et le fichier _resolv.conf_).  
 `rcctl enable dhcpd`  
 `rcctl start dhcpd`
 
@@ -501,7 +512,7 @@ server:
 `rcctl enable unbound`  
 `rcctl start unbound`
 
-🗨️ en output : unbound(ok)
+🗨️ output: "unbound(ok)"
 
 Checker la config avec  
 `unbound-checkconf /etc/unbound/unbound.conf`  
@@ -514,7 +525,7 @@ Vérifier les routes
 
 ![Packet Filter](/packet-filter.png "packet filter")
 
-L'accès à internet pour les des LAN 1, 2 et 3 passe obligatoirement par la gateway OpenBSD.  
+L'accès à internet pour les LAN 1, 2 et 3 passe obligatoirement par la gateway OpenBSD.  
 Pour celà, configurer le filtre de paquets pour activer NAT.  
 Bloquer également par défaut toutes les connexions entrantes sur l'interface externe.  
 Couper l'accès en SSH.  
@@ -562,7 +573,7 @@ pass in proto tcp from em1:network to em2:network port ssh
 Activer la configuration pf  
 `pfctl -f /etc/pf.conf`
 
-En output de cette commande, s'il y a une erreur dans la syntax, un message vous donne la ligne problématique
+En output de cette commande, s'il y a une erreur dans la syntax, un message vous donnera la ligne problématique.
 
 > `pfctl -s info` : statistiques globales  
 > `pfctl -s rules` : règles de filtrage chargées en mémoire  
@@ -577,10 +588,11 @@ En output de cette commande, s'il y a une erreur dans la syntax, un message vous
 
 2 VMs avec interface graphique Gnome
 
-- Verifier que vous avez les bonnes ip attribuées
-- Verifier que toutes les interfaces peuvent se pinger entre elles
-- Verifier que vous avez accès internet et à la page data.php
-- Verifier les connections ssh
+- Vérifier que vous avez les bonnes IPs attribuées dans vos machines clientes
+- Vérifier que toutes les interfaces peuvent se pinger entre elles
+- Vérifier que vous avez accès à internet
+- Ainsi qu'au serveur Nginx à la page data.php en http et https
+- Vérifier les connections ssh: personne ne peut se connecter à la gateway
 
 **Debuger un problème de connexion**
 
@@ -601,7 +613,11 @@ En output de cette commande, s'il y a une erreur dans la syntax, un message vous
 
 `ip link show dev eth1`
 
-Lacher l'ip asoocié à l'interface  
+Lacher l'ip asoocié à l'interface cliente  
 `sudo dhclient -r`  
 Recréer l'ip  
 `sudo dhclient`
+
+---
+
+🤖
